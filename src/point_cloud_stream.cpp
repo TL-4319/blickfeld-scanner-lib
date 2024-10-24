@@ -268,6 +268,14 @@ const frame_t& point_cloud_stream<frame_t>::recv_frame() {
 template<class frame_t>
 void point_cloud_stream<frame_t>::subscribe(subscribe_callback_t cb) {
 	conn->subscribe(protocol::stream::Event::DataCase::kPointCloud, [this, cb](const protocol::stream::Event& event) {
+#ifdef BSL_RECORDING
+			if (record) {
+				protocol::file::PointCloud_Data data;
+				data.mutable_frame()->CopyFrom(event.point_cloud().frame());
+				record->record_data(&data);
+			}
+#endif
+
 			convert_point_cloud(event.point_cloud().frame(), *frame);
 			cb(*frame);
 		});

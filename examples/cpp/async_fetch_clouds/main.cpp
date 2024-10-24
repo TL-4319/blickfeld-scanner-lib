@@ -6,6 +6,8 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 #include <stdio.h>
+#include <iostream>
+#include <fstream>
 
 #include <blickfeld/scanner.h>
 #include <blickfeld/utils.h>
@@ -36,6 +38,16 @@ int example(int argc, char* argv[]) {
 
 	// Subscribe for point cloud stream
 	auto stream = scanner->get_point_cloud_stream();
+
+	std::ofstream dump_stream;
+#ifdef BSL_RECORDING
+	if (dump_fn != "") {
+		printf("Recording to %s.bfpc ..\n", dump_fn.c_str());
+		dump_stream.open(dump_fn + ".bfpc", std::ios::out | std::ios::trunc | std::ios::binary);
+		stream->record_to_stream(&dump_stream);
+	}
+#endif
+
 	stream->subscribe([scanner](const blickfeld::protocol::data::Frame& frame) {
 		// Format of frame is described in protocol/blickfeld/data/frame.proto or doc/protocol.md
 		// Protobuf API is described in https://developers.google.com/protocol-buffers/docs/cpptutorial
